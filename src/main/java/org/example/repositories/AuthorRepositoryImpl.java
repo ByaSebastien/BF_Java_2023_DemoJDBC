@@ -18,7 +18,7 @@ public class AuthorRepositoryImpl implements AuthorRepository{
             conn.setAutoCommit(false);
 
             PreparedStatement psmt = conn.prepareStatement("""
-                                                                INSERT INTO Author
+                                                                INSERT INTO Author (firstname,lastname,pseudo)
                                                                 VALUES(?,?,?)
                                                                 RETURNING *""");
 
