@@ -1,13 +1,18 @@
 package org.example.repositories;
 
-import org.example.models.Book;
+import org.example.models.entities.Author;
+import org.example.models.entities.Book;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
-public class BookRepositoryImpl implements BookRepository {
+public class BookRepositoryImpl extends BaseRepositoryImpl<Book,Integer> implements BookRepository {
 
+    public BookRepositoryImpl(){
+        super("BOOK","BOOK_ID");
+    }
+
+    @Override
     public Book add(Book book){
 
         try(Connection conn = openConnection()){
@@ -24,13 +29,13 @@ public class BookRepositoryImpl implements BookRepository {
                 throw new RuntimeException("Failed");
             }
 
-            return buildBook(rs);
+            return buildEntity(rs);
 
         }catch (SQLException ex){
             throw new RuntimeException(ex.getMessage());
         }
     }
-
+    @Override
     public void add(List<Book> books){
 
         try(Connection conn = openConnection()){
@@ -54,44 +59,33 @@ public class BookRepositoryImpl implements BookRepository {
         }
     }
 
-    public List<Book> getAll(){
+    @Override
+    public Book getOneWithInfo(Integer id) {
 
-        List<Book> books = new ArrayList<>();
-        try(Connection conn = openConnection()) {
-            Statement stm = conn.createStatement();
-            ResultSet rs = stm.executeQuery("SELECT * FROM Book");
-            while (rs.next()){
-                books.add(buildBook(rs));
-            }
-            conn.close();
-            return books;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Book getOne(Integer id){
-
-        Book book;
         try(Connection conn = openConnection()){
 
-            PreparedStatement psmt = conn.prepareStatement("SELECT * FROM BOOK WHERE BOOK_ID = ?");
+            PreparedStatement psmt = conn.prepareStatement("""
+        SELECT BOOK_ID,TITLE,DESCRIPTION,BOOK.AUTHOR_ID,FIRSTNAME,LASTNAME,PSEUDO
+        FROM BOOK JOIN AUTHOR ON BOOK.AUTHOR_ID = AUTHOR.AUTHOR_ID
+        WHERE BOOK_ID = ?
+""");
 
             psmt.setInt(1,id);
 
             ResultSet rs = psmt.executeQuery();
 
-            if(rs.next()){
-                 return buildBook(rs);
+            if(!rs.next()){
+                throw new RuntimeException();
             }
 
-            throw new RuntimeException("Le livre n'existe pas");
+            return buildEntityWithInfo(rs);
 
         }catch (SQLException ex){
             throw new RuntimeException(ex.getMessage());
         }
     }
 
+    @Override
     public boolean update(Integer id,Book newBook){
 
         try(Connection conn = openConnection()){
@@ -114,20 +108,8 @@ public class BookRepositoryImpl implements BookRepository {
         }
     }
 
-    public boolean delete(Integer id){
-
-        try(Connection conn = openConnection()){
-
-            PreparedStatement psmt = conn.prepareStatement("DELETE FROM BOOK WHERE BOOK_ID = ?");
-            psmt.setInt(1,id);
-            return psmt.executeUpdate() == 1;
-
-        }catch (SQLException ex){
-            throw new RuntimeException(ex.getMessage());
-        }
-    }
-
-    public Book buildBook(ResultSet rs) throws SQLException {
+    @Override
+    public Book buildEntity(ResultSet rs) throws SQLException {
 
         Integer id = rs.getInt("BOOK_ID");
         String title = rs.getString("TITLE");
@@ -137,20 +119,18 @@ public class BookRepositoryImpl implements BookRepository {
         return new Book(id,title,description,authorId);
     }
 
-    public Connection openConnection(){
+    public Book buildEntityWithInfo(ResultSet rs) throws SQLException {
 
-        String connectionString = "jdbc:postgresql://localhost:5433/DemoJdbc";
-        String user = "postgres";
-        String password = "postgres";
+        Integer id = rs.getInt("BOOK_ID");
+        String title = rs.getString("TITLE");
+        String description = rs.getString("DESCRIPTION");
+        Integer authorId = rs.getInt("AUTHOR_ID");
+        Book book = new Book(id,title,description,authorId);
+        String firstname = rs.getString("FIRSTNAME");
+        String lastname = rs.getString("LASTNAME");
+        String pseudo = rs.getString("PSEUDO");
+        book.setAuthor(new Author(authorId,firstname,lastname,pseudo));
 
-        try {
-
-            return DriverManager.getConnection(connectionString,user,password);
-
-        } catch (SQLException e) {
-
-            throw new RuntimeException(e);
-
-        }
+        return book;
     }
 }

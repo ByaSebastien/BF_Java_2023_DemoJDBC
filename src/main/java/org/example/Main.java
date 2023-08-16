@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.models.Book;
+import org.example.models.entities.Book;
 import org.example.repositories.AuthorRepositoryImpl;
 import org.example.repositories.BookRepositoryImpl;
 import org.example.services.BookService;

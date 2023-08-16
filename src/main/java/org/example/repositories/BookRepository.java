@@ -1,20 +1,12 @@
 package org.example.repositories;
 
-import org.example.models.Book;
+import org.example.models.entities.Book;
 
 import java.util.List;
 
-public interface BookRepository {
-
-    Book add(Book book);
+public interface BookRepository extends BaseRepository<Book,Integer>{
 
     void add(List<Book> book);
 
-    Book getOne(Integer id);
-
-    List<Book> getAll();
-
-    boolean update(Integer id, Book book);
-
-    boolean delete(Integer id);
+    Book getOneWithInfo(Integer id);
 }

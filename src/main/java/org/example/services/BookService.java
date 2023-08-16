@@ -1,10 +1,9 @@
 package org.example.services;
 
-import org.example.models.Author;
-import org.example.models.Book;
+import org.example.models.entities.Author;
+import org.example.models.entities.Book;
 import org.example.repositories.AuthorRepository;
 import org.example.repositories.BookRepository;
-import org.example.repositories.BookRepositoryImpl;
 
 import java.util.List;
 

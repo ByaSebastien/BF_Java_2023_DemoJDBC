@@ -1,6 +1,6 @@
 package org.example.services;
 
-import org.example.models.Author;
+import org.example.models.entities.Author;
 import org.example.repositories.AuthorRepository;
 
 import java.util.List;
