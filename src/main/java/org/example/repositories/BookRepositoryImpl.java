@@ -1,4 +1,4 @@
-package org.example;
+package org.example.repositories;
 
 import org.example.models.Book;
 
@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MiniCRUD {
+public class BookRepositoryImpl implements BookRepository {
 
     public Book add(Book book){
 
@@ -25,6 +25,29 @@ public class MiniCRUD {
             }
 
             return buildBook(rs);
+
+        }catch (SQLException ex){
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    public void add(List<Book> books){
+
+        try(Connection conn = openConnection()){
+
+            PreparedStatement psmt = conn.prepareStatement("INSERT INTO BOOK (TITLE,DESCRIPTION,AUTHOR_ID)" +
+                    "VALUES (?,?,?)");
+
+            for(Book book : books){
+                psmt.setString(1,book.getTitle());
+                psmt.setString(2,book.getDescription());
+                psmt.setInt(3,book.getAuthorId());
+
+                psmt.addBatch();
+                psmt.clearParameters();
+            }
+
+            int[] nbRows = psmt.executeBatch();
 
         }catch (SQLException ex){
             throw new RuntimeException(ex.getMessage());
